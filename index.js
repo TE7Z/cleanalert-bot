@@ -1,6 +1,6 @@
 require('dotenv').config();
 const express = require('express');
-const { handleIncoming } = require('./handlers/messageHandler');
+const { handleIncoming } = require('./messageHandler');
 
 const app = express();
 app.use(express.urlencoded({ extended: false }));
