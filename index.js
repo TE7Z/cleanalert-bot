@@ -85,13 +85,13 @@ function createTicket(phone, mediaUrl, severity, wasteType) {
 app.post('/webhook', async (req, res) => {
   res.sendStatus(200);
   const from = req.body.From;
-  const body = (req.body.Body || '').trim().toLowerCase();
+  const body = (req.body.Body || '').trim().toLowerCase().replace(/[*_]/g, '');
   const mediaUrl = req.body.MediaUrl0;
   const session = getSession(from) || { state: 'IDLE' };
 
   try {
     // Global commands
-    if (['hi','hello','start','menu'].includes(body)) {
+    if (!body || ['hi','hello','start','menu','ok','hey'].includes(body)) {
       clearSession(from);
       setSession(from, { state: 'AWAITING_IMAGE' });
       return await sendMsg(from,
