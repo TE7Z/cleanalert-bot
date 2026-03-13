@@ -199,3 +199,8 @@ app.post('/webhook', async (req, res) => {
     await sendMsg(from, '⚠️ Something went wrong. Type *Hi* to try again.');
   }
 });
+
+app.get('/health', (req, res) => res.json({ status: 'ok' }));
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, '0.0.0.0', () => console.log(`CleanAlert running on port ${PORT}`));
