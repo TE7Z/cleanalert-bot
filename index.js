@@ -83,7 +83,7 @@ function createTicket(phone, mediaUrl, severity, wasteType) {
 
 // Main webhook
 app.post('/webhook', async (req, res) => {
-  res.sendStatus(200);
+  res.status(200).send('');
   const from = req.body.From;
   const body = (req.body.Body || '').trim().toLowerCase().replace(/[*_]/g, '');
   const mediaUrl = req.body.MediaUrl0;
