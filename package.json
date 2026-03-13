@@ -4,7 +4,7 @@
   "description": "WhatsApp AI waste reporting bot for civic complaints",
   "main": "src/index.js",
   "scripts": {
-    "start": "node src/index.js",
+    "start": "node index.js",
     "dev": "nodemon src/index.js"
   },
   "dependencies": {
