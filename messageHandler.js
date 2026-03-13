@@ -1,9 +1,9 @@
-const { getSession, setSession, clearSession } = require('../services/sessionStore');
-const { sendMessage, sendMessageWithMedia } = require('../services/twilioService');
-const { validateWasteImage } = require('../services/aiService');
-const { createTicket, closeTicket } = require('../services/ticketService');
-const { notifyAMC } = require('../services/amcService');
-const { downloadTwilioMedia } = require('../utils/mediaUtils');
+const { getSession, setSession, clearSession } = require('./services/sessionStore');
+const { sendMessage, sendMessageWithMedia } = require('./services/twilioService');
+const { validateWasteImage } = require('./services/aiService');
+const { createTicket, closeTicket } = require('./services/ticketService');
+const { notifyAMC } = require('./services/amcService');
+const { downloadTwilioMedia } = require('./utils/mediaUtils');
 
 /**
  * Entry point for all incoming WhatsApp messages from Twilio webhook.
