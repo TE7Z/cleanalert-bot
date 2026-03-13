@@ -87,11 +87,14 @@ app.post('/webhook', async (req, res) => {
   const from = req.body.From;
   const body = (req.body.Body || '').trim().toLowerCase().replace(/[*_]/g, '');
   const mediaUrl = req.body.MediaUrl0;
-  const session = getSession(from) || { state: 'IDLE' };
-
+  let session = getSession(from);
+if (!session) {
+  session = { state: 'AWAITING_IMAGE' };
+  setSession(from, session);
+}
   try {
     // Global commands
-    if (!body || ['hi','hello','start','menu','ok','hey'].includes(body)) {
+    if (['hi','hello','start','menu','ok','hey'].includes(body) && !mediaUrl) {
       clearSession(from);
       setSession(from, { state: 'AWAITING_IMAGE' });
       return await sendMsg(from,
