@@ -76,33 +76,64 @@ function createTicket(phone, mediaUrl, severity, wasteType) {
   return ticket;
 }
 
+const MESSAGES = {
+  en: {
+    welcome: '🌿 *Welcome to CleanAlert!*\n\nReport waste in public areas.\nAMC will be notified and you will get confirmation once cleaned.\n\n📸 Please send a *photo of the waste* to begin.\n\nType *cancel* anytime to stop',
+    sendPhoto: '📸 Please send a *photo* of the waste in a public area.',
+    validating: '🤖 Got your photo! Validating with AI...',
+    rejected: (reason) => `❌ *Report Not Accepted*\n\nReason: ${reason}\n\nPlease send a clear photo of waste in a *public outdoor area*.\nType *Hi* to try again.`,
+    askLocation: (type, severity) => `✅ *Waste Detected!*\nType: ${type}\nSeverity: ${severity}\n\n📍 Now share your *live location*\n*(Tap 📎 → Location → Send Current Location)*\n\n_Or type *skip* to continue_`,
+    noLocation: '📍 Please share your *live location*.\n*(Tap 📎 → Location → Send Current Location)*\n\n_Or type *skip*_',
+    ticketRaised: (id, severity) => `🎫 *Ticket Raised!*\n\nID: *${id}*\nSeverity: ${severity}\nStatus: Pending AMC\n\nYou will receive cleaned photo once AMC finishes.\n\n_Type *status* to check anytime_`,
+    cancelled: '❌ Cancelled. Type *Hi* to start a new report.',
+    noTicket: 'ℹ️ No active report. Type *Hi* to report waste.',
+    cleaned: (id) => `🎉 *Your Reported Area Has Been Cleaned!*\n\nTicket: *${id}*\nCompleted: ${new Date().toLocaleString('en-IN')}\n\nThank you for keeping our town clean! 🌿\n\n_Type *Hi* to report another issue_`,
+    error: '⚠️ Something went wrong. Type *Hi* to try again.',
+  },
+  gu: {
+    welcome: '🌿 *CleanAlert માં આપનું સ્વાગત છે!*\n\nજાહેર વિસ્તારમાં કચરાની જાણ કરો.\nAMC ને સૂચના આપવામાં આવશે અને સફાઈ પછી તમને ખબર મળશે.\n\n📸 શરૂ કરવા *કચરાનો ફોટો* મોકલો.\n\nબંધ કરવા *રદ કરો* ટાઈપ કરો',
+    sendPhoto: '📸 કૃપા કરીને જાહેર વિસ્તારમાં કચરાનો *ફોટો* મોકલો.',
+    validating: '🤖 ફોટો મળ્યો! AI થી ચકાસણી થઈ રહી છે...',
+    rejected: (reason) => `❌ *રિપોર્ટ સ્વીકારાયો નથી*\n\nકારણ: ${reason}\n\n*જાહેર બહારના વિસ્તારમાં* કચરાનો સ્પષ્ટ ફોટો મોકલો.\nફરી પ્રયાસ કરવા *હેલો* ટાઈપ કરો.`,
+    askLocation: (type, severity) => `✅ *કચરો મળ્યો!*\nપ્રકાર: ${type}\nગંભીરતા: ${severity}\n\n📍 હવે *લાઈવ લોકેશન* મોકલો\n*(📎 દબાવો → લોકેશન → હાલનું સ્થાન મોકલો)*\n\n_આગળ વધવા *છોડો* ટાઈપ કરો_`,
+    noLocation: '📍 *લાઈવ લોકેશન* મોકલો.\n*(📎 દબાવો → લોકેશન → હાલનું સ્થાન મોકલો)*\n\n_અથવા *છોડો* ટાઈપ કરો_',
+    ticketRaised: (id, severity) => `🎫 *ફરિયાદ નોંધાઈ!*\n\nID: *${id}*\nગંભીરતા: ${severity}\nસ્થિતિ: AMC ની રાહ\n\nAMC કામ પૂર્ણ કરે પછી સફાઈના ફોટો સાથે સૂચના મળશે.\n\n_સ્થિતિ જાણવા *સ્થિતિ* ટાઈપ કરો_`,
+    cancelled: '❌ રદ કરવામાં આવ્યું. નવો રિપોર્ટ કરવા *હેલો* ટાઈપ કરો.',
+    noTicket: 'ℹ️ કોઈ સક્રિય રિપોર્ટ નથી. *હેલો* ટાઈપ કરો.',
+    cleaned: (id) => `🎉 *સફાઈ થઈ ગઈ!*\n\nટિકિટ: *${id}*\nપૂર્ણ: ${new Date().toLocaleString('gu-IN')}\n\nઆભાર! 🌿\n\n_બીજો રિપોર્ট કરવા *હેલો* ટાઈપ કરો_`,
+    error: '⚠️ કંઈક ખોટું થયું. *હેલો* ટાઈપ કરો.',
+  }
+};
+
 // Main webhook
 app.post('/webhook', async (req, res) => {
   res.status(200).send('');
   const from = req.body.From;
-  const body = (req.body.Body || '').trim().toLowerCase().replace(/[*_]/g, '');
+// Detect language
+function detectLang(text) {
+  const gujaratiPattern = /[\u0A80-\u0AFF]/;
+  return gujaratiPattern.test(text) ? 'gu' : 'en';
+}
+const lang = detectLang(req.body.Body || '');
   const mediaUrl = req.body.MediaUrl0;
   let session = getSession(from);
 if (!session) {
-  session = { state: 'AWAITING_IMAGE' };
+  session = { state: 'AWAITING_IMAGE', lang: lang };
   setSession(from, session);
-}
-  try {
+  
+const M = MESSAGES[session.lang || lang || 'en'];
+  try 
     // Global commands
     if (['hi','hello','start','menu','ok','hey'].includes(body) && !mediaUrl) {
       clearSession(from);
       setSession(from, { state: 'AWAITING_IMAGE' });
       return await sendMsg(from,
-        '🌿 *Welcome to CleanAlert!*\n\n' +
-        'Report waste in public areas of our town.\n' +
-        'AMC will be notified and you will get confirmation once cleaned.\n\n' +
-        '📸 Please send a *photo of the waste* to begin.\n\n' +
-        '_Type *cancel* anytime to stop_');
+        M.welcome
     }
 
     if (body === 'cancel') {
       clearSession(from);
-      return await sendMsg(from, '❌ Cancelled. Type *Hi* to start a new report.');
+      return await sendMsg(from, M.cancelled);
     }
 
     if (body === 'status') {
