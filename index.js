@@ -1,7 +1,7 @@
 require('dotenv').config();
 const express = require('express');
+
 const twilio = require('twilio');
-const Anthropic = require('@anthropic-ai/sdk');
 const axios = require('axios');
 
 const app = express();
@@ -10,7 +10,7 @@ app.use(express.json());
 
 // Clients
 const twilioClient = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
-const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+
 const FROM = `whatsapp:${process.env.TWILIO_WHATSAPP_NUMBER}`;
 const AMC = `whatsapp:${process.env.AMC_WHATSAPP_NUMBER}`;
 
@@ -48,27 +48,22 @@ async function downloadImage(mediaUrl) {
 // Validate image with Claude AI
 async function validateImage(imageBase64, mimeType) {
   try {
-    const response = await anthropic.messages.create({
-      model: 'claude-sonnet-4-20250514',
-      max_tokens: 300,
-      messages: [{
-        role: 'user',
-        content: [
-          { type: 'image', source: { type: 'base64', media_type: mimeType, data: imageBase64 } },
-          { type: 'text', text: `You are a waste detection AI. Analyze this image and reply ONLY with JSON, no explanation.
-Rules:
-- VALID: waste/garbage/litter in outdoor PUBLIC area (road, street, park, footpath)
-- INVALID: no waste, indoor, private property, blurry
-
-JSON format:
-{"valid":boolean,"wasteType":"Loose garbage|Garbage bags|Mixed waste|Plastic waste|Construction debris|N/A","severity":"HIGH|MEDIUM|LOW|N/A","reason":"short reason if invalid else empty"}` }
-        ],
-      }],
-    });
-    const raw = response.content[0].text.replace(/\`\`\`json|\`\`\`/g, '').trim();
+    const response = await axios.post(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
+      {
+        contents: [{
+          parts: [
+            { inline_data: { mime_type: mimeType, data: imageBase64 } },
+            { text: `You are a waste detection AI for a civic complaint system in India. Analyze this image and respond ONLY with a JSON object, no explanation, no markdown. Rules: VALID means waste or garbage or litter in outdoor PUBLIC area like road street footpath park. INVALID means no waste or indoor or private property or blurry. JSON format: {"valid":boolean,"wasteType":"Loose garbage|Garbage bags|Mixed waste|Plastic waste|Construction debris|N/A","severity":"HIGH|MEDIUM|LOW|N/A","reason":"short reason if invalid else empty string"}` }
+          ]
+        }]
+      }
+    );
+    const raw = response.data.candidates[0].content.parts[0].text.replace(/```json|```/g, '').trim();
+    console.log('[Gemini Raw]', raw);
     return JSON.parse(raw);
   } catch (e) {
-    console.error('AI error:', e.message);
+    console.error('Gemini error:', e.message);
     return { valid: false, reason: 'AI validation failed. Please try again.' };
   }
 }
