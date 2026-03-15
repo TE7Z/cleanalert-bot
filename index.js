@@ -124,9 +124,9 @@ if (!session) {
 const M = MESSAGES[session.lang || lang || 'en'];
   try 
     // Global commands
-    if (['hi','hello','start','menu','ok','hey'].includes(body) && !mediaUrl) {
+    if (['hi','hello','start','menu','ok','hey','હાય','હેલો','નમસ્તે','શરૂ'].includes(body) && !mediaUrl) {
       clearSession(from);
-      setSession(from, { state: 'AWAITING_IMAGE' });
+      setSession(from, { state: 'AWAITING_IMAGE', lang: lang });
       return await sendMsg(from,
         M.welcome
     }
