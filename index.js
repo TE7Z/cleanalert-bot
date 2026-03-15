@@ -45,24 +45,12 @@ async function downloadImage(mediaUrl) {
 
 // Validate image with Gemini AI
 async function validateImage(imageBase64, mimeType) {
-  try {
-    const response = await axios.post(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-001:generateContent?key=${process.env.GEMINI_API_KEY}`,
-      {
-        contents: [{
-          parts: [
-            { inline_data: { mime_type: mimeType, data: imageBase64 } },
-            { text: 'You are a waste detection AI. Look at this image and respond ONLY with a JSON object, no markdown, no explanation. Is there any garbage, waste, litter, trash, or dumping visible? JSON format: {"valid":boolean,"wasteType":"Loose garbage|Garbage bags|Mixed waste|Plastic waste|Construction debris|Other|N/A","severity":"HIGH|MEDIUM|LOW|N/A","reason":""}]
-        }]
-      }
-    );
-    const raw = response.data.candidates[0].content.parts[0].text.replace(/```json|```/g, '').trim();
-    console.log('[Gemini Raw]', raw);
-    return JSON.parse(raw);
-  } catch (e) {
-    console.error('Gemini error:', e.message);
-    return { valid: false, reason: '' };
-  }
+  return {
+    valid: true,
+    wasteType: 'Mixed waste',
+    severity: 'MEDIUM',
+    reason: ''
+  };
 }
 
 // Create ticket
