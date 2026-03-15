@@ -130,7 +130,9 @@ app.post('/webhook', async (req, res) => {
   try {
     // Global commands
     const greetings = ['hi', 'hello', 'start', 'menu', 'ok', 'hey'];
-    const isGreeting = greetings.includes(body) && !mediaUrl;
+    const isGujarati = /[\u0A80-\u0AFF]/.test(req.body.Body || '');
+const isShortGujarati = isGujarati && (req.body.Body || '').trim().length < 15 && !mediaUrl;
+const isGreeting = (greetings.includes(body) && !mediaUrl) || isShortGujarati;
 
     if (isGreeting) {
       clearSession(from);
