@@ -62,7 +62,7 @@ async function validateImage(imageBase64, mimeType) {
     return JSON.parse(raw);
   } catch (e) {
     console.error('Gemini error:', e.message);
-    return { valid: false, reason: 'AI validation failed. Please try again.' };
+    return { valid: false, reason: '' };
   }
 }
 
