@@ -52,8 +52,7 @@ async function validateImage(imageBase64, mimeType) {
         contents: [{
           parts: [
             { inline_data: { mime_type: mimeType, data: imageBase64 } },
-            { text: 'You are a waste detection AI for a civic complaint system in India. Analyze this image and respond ONLY with a JSON object, no explanation, no markdown. Rules: VALID means waste or garbage or litter in outdoor PUBLIC area like road street footpath park. INVALID means no waste or indoor or private property or blurry. JSON format: {"valid":boolean,"wasteType":"Loose garbage|Garbage bags|Mixed waste|Plastic waste|Construction debris|N/A","severity":"HIGH|MEDIUM|LOW|N/A","reason":"short reason if invalid else empty string"}' }
-          ]
+            { text: 'You are a waste detection AI. Look at this image and respond ONLY with a JSON object, no markdown, no explanation. Is there any garbage, waste, litter, trash, or dumping visible? JSON format: {"valid":boolean,"wasteType":"Loose garbage|Garbage bags|Mixed waste|Plastic waste|Construction debris|Other|N/A","severity":"HIGH|MEDIUM|LOW|N/A","reason":""}]
         }]
       }
     );
