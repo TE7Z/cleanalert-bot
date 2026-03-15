@@ -124,7 +124,9 @@ if (!session) {
 const M = MESSAGES[session.lang || lang || 'en'];
   try 
     // Global commands
-    if (['hi','hello','start','menu','ok','hey','હાય','હેલો','નમસ્તે','શરૂ'].includes(body) && !mediaUrl) {
+    const greetings = ['hi','hello','start','menu','ok','hey'];
+const gujaratiGreetings = body.length < 10 && !body.match(/[a-z]/);
+if ((greetings.includes(body) || gujaratiGreetings) && !mediaUrl) {
       clearSession(from);
       setSession(from, { state: 'AWAITING_IMAGE', lang: lang });
       return await sendMsg(from,
